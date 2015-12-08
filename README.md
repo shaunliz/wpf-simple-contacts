@@ -1,4 +1,3 @@
-# wpf-simple-contacts
 # WPF  Simple Contacts / Address Book
 Simple contacts program written in WPF
 
