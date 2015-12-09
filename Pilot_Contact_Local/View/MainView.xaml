@@ -52,5 +52,6 @@
         <TextBlock Name="tbFaxNumber" Grid.Column="1" HorizontalAlignment="Left" Margin="190,251,0,0" TextWrapping="Wrap" Text="-" VerticalAlignment="Top" Height="29" Width="204" Grid.IsSharedSizeScope="True" Padding="5,5,0,0" FontSize="14" Background="#FFE2E2E2"/>
         <TextBlock Name="tbAddress" Grid.Column="1" HorizontalAlignment="Left" Margin="190,296,0,0" TextWrapping="Wrap" Text="-" VerticalAlignment="Top" Height="87" Width="204" Grid.IsSharedSizeScope="True" Padding="5,5,0,0" FontSize="14" Background="#FFE2E2E2"/>
         <TextBlock Name="tbMemo" Grid.Column="1" HorizontalAlignment="Left" Margin="190,399,0,0" TextWrapping="Wrap" Text="-" VerticalAlignment="Top" Height="88" Width="204" Grid.IsSharedSizeScope="True" Padding="5,5,0,0" FontSize="14" Background="#FFE2E2E2"/>
+        <Button Content="Save to Excel" Click="btnSaveToExcel_Click" Margin="10,577,192,73"/>
     </Grid>
 </Window>
