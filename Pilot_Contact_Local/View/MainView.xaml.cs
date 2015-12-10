@@ -13,7 +13,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Pilot_Contact_Local.Model;
 using Pilot_Contact_Local.Service;
-using Microsoft.Office.Interop.Excel;
+using Excel = Microsoft.Office.Interop.Excel;
+using System.Data.OleDb;
+using System.Data;
+using System.Collections.ObjectModel;
 
 namespace Pilot_Contact_Local.View
 {
@@ -22,7 +25,9 @@ namespace Pilot_Contact_Local.View
     /// </summary>
     public partial class MainView : System.Windows.Window
     {
-        List<Person> personList;
+        //List<Person> personList;
+        public ObservableCollection<Person> personList;
+        private static object _syncLock = new object();
 
         public MainView()
         {
@@ -31,13 +36,15 @@ namespace Pilot_Contact_Local.View
             // set window position
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
 
-            personList = new List<Person>();
+            //personList = new List<Person>();
+            personList = new ObservableCollection<Person>();
             personList = ContactService.GetAllPeople();
+            BindingOperations.EnableCollectionSynchronization(personList, _syncLock);
 
             contactList.ItemsSource = personList;
         }
 
-
+       
         // show add. window
         private void btnAddPerson_Click(object sender, RoutedEventArgs e)
         {
@@ -65,7 +72,8 @@ namespace Pilot_Contact_Local.View
 
         private void Window_Activated(object sender, EventArgs e)
         {
-            personList = new List<Person>();
+            // personList = new List<Person>();
+            personList = new ObservableCollection<Person>();
             personList = ContactService.GetAllPeople();
 
             contactList.ItemsSource = personList;
@@ -99,9 +107,11 @@ namespace Pilot_Contact_Local.View
                     Microsoft.Office.Interop.Excel.Worksheet excelWorksheet = (Microsoft.Office.Interop.Excel.Worksheet)excelBook.Worksheets.Add(missingType, missingType, missingType, missingType);
                     excelApp.Visible = false;
 
+                    Microsoft.Office.Interop.Excel.Range cells = excelWorksheet.Cells;
+                    cells.NumberFormat = "@";
+
                     // 내용 저장
                     // excelWorksheet.Cells[1, 2] = "TEST";
-
                     /* Title 정리 */
                     excelWorksheet.Cells[1, 1] = "ID";
                     excelWorksheet.Cells[1, 2] = "Name";
@@ -112,6 +122,7 @@ namespace Pilot_Contact_Local.View
                     excelWorksheet.Cells[1, 7] = "Address";
                     excelWorksheet.Cells[1, 8] = "Memo";
 
+                    /* 내용 구성 */
                     for (int i = 0; i < personList.Count; i++ )
                     {
                         excelWorksheet.Cells[2 + i, 1] = personList[i].Id.ToString();
@@ -156,6 +167,7 @@ namespace Pilot_Contact_Local.View
             catch (Exception e)
             {
                 obj = null;
+                MessageBox.Show("Unable to release the Object " + e.ToString());
             }
             finally
             {
@@ -164,6 +176,86 @@ namespace Pilot_Contact_Local.View
         }
         #endregion
 
+        // 엑셀 불러오기
+        private void btnLoadFromExcel_Click(object sender, RoutedEventArgs e)
+        {
+            Excel.Application excelApp;
+            Excel.Workbook excelBook;
+            Excel.Worksheet excelSheet;
+            Excel.Range excelRange;
 
+            Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
+            openFileDialog.DefaultExt = "*.xls";
+            openFileDialog.Filter = "Excel Files (*.xls)|*.xls";
+            // openFileDialog.Multiselect = true;
+            openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
+            if(openFileDialog.ShowDialog() == true)
+            {
+                Object missingType = Type.Missing;
+                excelApp = new Excel.Application();
+                //excelBook = excelApp.Workbooks.Add(missingType);
+                excelBook = excelApp.Workbooks.Open(openFileDialog.FileName, missingType, missingType, missingType, missingType, 
+                    missingType, missingType, missingType, missingType, missingType, missingType, missingType, missingType, 
+                    missingType, missingType);
+                excelSheet = (Excel.Worksheet)excelBook.Worksheets.get_Item(1);
+                excelRange = excelSheet.UsedRange;// sheet 의 데이터 범위값.
+
+                int lastId = personList.Count; // ID 를 할당 하기 위해서 현재의 사람숫자를 가져와서 가지고 있는다.
+
+                for (int rowCount = 2; rowCount <= excelRange.Rows.Count; rowCount++)
+                {
+                    {
+                        Person person = new Person();
+
+                        //person.Id = Int32.Parse((string)(excelRange.Cells[rowCount, 1] as Excel.Range).Value2);
+                        person.Id           = ++lastId;
+                        person.Name         = NullToSpace(((excelRange.Cells[rowCount, 2] as Excel.Range).Value).ToString());
+                        person.Email        = NullToSpace(((excelRange.Cells[rowCount, 3] as Excel.Range).Value).ToString());
+                        person.MobilePhone  = NullToSpace(((excelRange.Cells[rowCount, 4] as Excel.Range).Value).ToString());
+                        person.TelePhone    = NullToSpace(((excelRange.Cells[rowCount, 5] as Excel.Range).Value).ToString());
+                        person.Address      = NullToSpace(((excelRange.Cells[rowCount, 7] as Excel.Range).Value).ToString());
+                        person.Memo         = NullToSpace(((excelRange.Cells[rowCount, 8] as Excel.Range).Value).ToString());
+
+                        lock (_syncLock) 
+                        {
+                            personList.Add(person);
+                            ContactService.AddPersonToDBFromExcel(person);
+                        }
+                    }
+                }
+
+                excelBook.Close(true, missingType, missingType);
+                excelApp.Quit();
+
+                releaseObject2(excelSheet);
+                releaseObject2(excelBook);
+                releaseObject2(excelApp);
+            }
+        }
+
+        private string NullToSpace(string str)
+        {
+            if (str == null) return "";
+            else return str;
+        }
+
+        private void releaseObject2(object obj)
+        {
+            try
+            {
+                System.Runtime.InteropServices.Marshal.FinalReleaseComObject(obj);
+                obj = null;
+            }
+            catch(Exception e)
+            {
+                obj = null;
+                MessageBox.Show("Unable to release the Object " + e.ToString());
+            }
+            finally 
+            {
+                GC.Collect();
+            }
+        }
     }
 }

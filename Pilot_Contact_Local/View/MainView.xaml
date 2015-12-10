@@ -11,7 +11,7 @@
             <ColumnDefinition Width="357*"/>
         </Grid.ColumnDefinitions>
         <Label Content="Contacts List" FontSize="14" Margin="10,10,176,634" VerticalContentAlignment="Center"/>
-        <Button Content="Add Person" Click="btnAddPerson_Click" Margin="200,577,2,73"/>
+        <Button Content="Add Person" Click="btnAddPerson_Click" Margin="200,577,2,28"/>
         <ListView Name="contactList" HorizontalAlignment="Left" Height="501" Margin="10,71,0,0" VerticalAlignment="Top" Width="290" 
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderBrush="Black" Background="#FFE8E8E8" MouseDoubleClick="contactList_MouseDoubleClick">
             <ListView.View>
@@ -52,6 +52,7 @@
         <TextBlock Name="tbFaxNumber" Grid.Column="1" HorizontalAlignment="Left" Margin="190,251,0,0" TextWrapping="Wrap" Text="-" VerticalAlignment="Top" Height="29" Width="204" Grid.IsSharedSizeScope="True" Padding="5,5,0,0" FontSize="14" Background="#FFE2E2E2"/>
         <TextBlock Name="tbAddress" Grid.Column="1" HorizontalAlignment="Left" Margin="190,296,0,0" TextWrapping="Wrap" Text="-" VerticalAlignment="Top" Height="87" Width="204" Grid.IsSharedSizeScope="True" Padding="5,5,0,0" FontSize="14" Background="#FFE2E2E2"/>
         <TextBlock Name="tbMemo" Grid.Column="1" HorizontalAlignment="Left" Margin="190,399,0,0" TextWrapping="Wrap" Text="-" VerticalAlignment="Top" Height="88" Width="204" Grid.IsSharedSizeScope="True" Padding="5,5,0,0" FontSize="14" Background="#FFE2E2E2"/>
-        <Button Content="Save to Excel" Click="btnSaveToExcel_Click" Margin="10,577,192,73"/>
+        <Button Content="Save to Excel" Click="btnSaveToExcel_Click" Margin="10,577,107,73"/>
+        <Button Content="Load from Excel" Click="btnLoadFromExcel_Click" Margin="11,622,107,28"/>
     </Grid>
 </Window>

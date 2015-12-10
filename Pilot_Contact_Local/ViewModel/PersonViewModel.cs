@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Pilot_Contact_Local.Service;
 using Pilot_Contact_Local.Model;
+using System.Collections.ObjectModel;
 
 namespace Pilot_Contact_Local.ViewModel
 {
@@ -18,8 +19,10 @@ namespace Pilot_Contact_Local.ViewModel
         public string Address { get; set; }
         public string Memo { get; set; }
 
-        private List<Person> _people;
-        public List<Person> People
+        //private List<Person> _people;
+        //public List<Person> People
+        private ObservableCollection<Person> _people;
+        public ObservableCollection<Person> People
         {
             get { return _people; }
             set { _people = value; }

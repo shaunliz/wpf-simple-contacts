@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Data;
 using System.Data.SQLite;
 using Pilot_Contact_Local.Model;
+using System.Collections.ObjectModel;
 
 namespace Pilot_Contact_Local.Service
 {
@@ -19,9 +20,11 @@ namespace Pilot_Contact_Local.Service
         }
 
         // select all contacts information
-        public static List<Person> GetAllPeople()
+        //public static List<Person> GetAllPeople()
+        public static ObservableCollection<Person> GetAllPeople()
         {
-            var list = new List<Person>();
+            // var list = new List<Person>();
+            var list = new ObservableCollection<Person>();
 
             string query = "select * from people";
 
@@ -65,6 +68,37 @@ namespace Pilot_Contact_Local.Service
             using(var connection = new SQLiteConnection(ConnectionString))
             {
                 using(var command = new SQLiteCommand(sql, connection))
+                {
+                    connection.Open();
+
+                    try
+                    {
+                        int queryResult = command.ExecuteNonQuery();
+                    }
+                    catch (System.InvalidCastException ex)
+                    {
+                        System.ArgumentException argEx = new System.ArgumentException("Invalid Case Exception", ex);
+                        throw argEx;
+                    }
+                    catch (System.Data.SqlClient.SqlException ex)
+                    {
+                        System.ArgumentException argEx = new System.ArgumentException("SqlException", ex);
+                        throw argEx;
+                    }
+                }
+            }
+        }
+
+        // add contact from excel - has id
+        public static void AddPersonToDBFromExcel(Person person)
+        {
+            string sql = "insert into people values (" + person.Id +", '" + person.Name + "', '" + person.Email + "', '"
+                + person.MobilePhone + "', '" + person.TelePhone + "', '" + person.FaxNumber + "', '"
+                + person.Address + "', '" + person.Memo + "', '" + person.Photo + "')";
+
+            using (var connection = new SQLiteConnection(ConnectionString))
+            {
+                using (var command = new SQLiteCommand(sql, connection))
                 {
                     connection.Open();
 
